@@ -1,33 +1,8 @@
-############################################################
-# IMPLEMENTATION.R
-# Comparative fairness experiment: Adult, German Credit, COMPAS
-#
-# IMPORTANT METHODOLOGICAL NOTE:
-# This is a runnable, generalized two-stage reweighing
-# implementation for comparing the three datasets.
-# It is NOT a verbatim reproduction of the original
-# Adult-specific Phase 1 + Phase 2 LP algorithm in
-# phases_1_2_adult.R. That original code is tied to a
-# particular 8-cell race x gender x income setup and its
-# age/education refinement. The generalized procedure
-# below reweights protected-group x outcome x covariate-bin
-# cells, so results must be described as a generalized
-# RRW-style adaptation, not as exact reproduction.
-#
-# Outcome convention:
-#   y = 1 means favourable outcome.
-# Fairness convention:
-#   DP_Diff = P(predicted positive | unprivileged)
-#             - P(predicted positive | privileged)
-#   DIR = unprivileged selection rate / privileged rate
-#
-# Run this whole file from RStudio or with:
-#   Rscript Implementation.R
-############################################################
+# IMPLEMENTATION on the following datasets: Adult, German Credit, COMPAS
+# Note: The original implementation was specific to the attributes of the original datasets, so this a generalized version.
 
-############################
+
 # 1. Packages
-############################
 
 required_packages <- c("caret", "pROC", "FNN")
 missing_packages <- required_packages[
@@ -45,13 +20,8 @@ suppressPackageStartupMessages({
 
 set.seed(77)
 
-############################
 # 2. Dataset loading
-############################
 
-# All data are downloaded from public sources.
-# If download fails, download the files manually and change
-# the URL/path in the relevant loader.
 
 load_adult <- function() {
   train_url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
@@ -306,10 +276,7 @@ rrw_weights <- function(train, refine_vars, smoothing = 0.5) {
   weights
 }
 
-
-############################
 # 6. Model fitting and experiment runner
-############################
 
 fit_logistic <- function(train, test, weights = NULL) {
   predictors <- setdiff(names(train),
@@ -397,9 +364,7 @@ run_experiment <- function(dataset) {
        weighted_model = weighted$model)
 }
 
-############################
 # 7. Run all datasets
-############################
 
 datasets <- list(
   load_adult(),
@@ -410,9 +375,7 @@ datasets <- list(
 experiment_outputs <- lapply(datasets, run_experiment)
 results <- do.call(rbind, lapply(experiment_outputs, `[[`, "results"))
 
-############################
 # 8. Display and save results
-############################
 
 print(results, row.names = FALSE)
 
